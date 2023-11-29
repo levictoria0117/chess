@@ -10,7 +10,7 @@ class state():
             ["--", "--", "--", "--", "--", "--", "--", "--"],
             ["--", "--", "--", "--", "--", "--", "--", "--"],
             ["w_pawn", "w_pawn", "w_pawn", "w_pawn", "w_pawn", "w_pawn", "w_pawn", "w_pawn"],
-            ["w_rook", "w_knight", "w_bishop", "w_queen", "w_knight", "w_bishop", "w_knight", "w_rook"],
+            ["w_rook", "w_knight", "w_bishop", "w_queen", "w_king", "w_bishop", "w_knight", "w_rook"],
         ]
         self.white_move = True
         self.movelog = []
