@@ -4,6 +4,7 @@ from copy import deepcopy
 from chessEnums import PieceColor, PieceName
 from chessEngine import State, Move
 
+# abstract base class
 class AI(ABC):
     def __init__(self, team: PieceColor):
         self.team = team
@@ -25,6 +26,12 @@ class MiniMaxAlphaBeta(AI):
         self.heuristic_func = heuristic_func
     
     def move(self, board: State) -> bool:
+        """
+        on best move found performs move and makes move else no move found and made
+
+        :param board:
+        :return: True is move is found Else False
+        """
         best_move = self.minimax(board)
         if best_move is not None:
             name: PieceName = board.get_piece_name(best_move)
@@ -49,7 +56,7 @@ class MiniMaxAlphaBeta(AI):
             raise Exception("Error AI: team not defined")
         return best_move
 
-    def min_value(self, board: State, depth: int, team: PieceColor, alpha: int, beta: int) -> tuple[float, str | None]:
+    def min_value(self, board: State, depth: int, team: PieceColor, alpha: int, beta: int) -> tuple[float, Move | None]:
         """
         :param board: State object representing representing a chess board State
         :param depth: minimax depth
@@ -84,7 +91,7 @@ class MiniMaxAlphaBeta(AI):
         return value, best_move
 
 
-    def max_value(self, board: State, depth: int, team: PieceColor, alpha: int, beta: int) -> tuple[float, str | None]:
+    def max_value(self, board: State, depth: int, team: PieceColor, alpha: int, beta: int) -> tuple[float, Move | None]:
         """
         :param board: State object representing representing a chess board State
         :param depth: minimax tree depth
