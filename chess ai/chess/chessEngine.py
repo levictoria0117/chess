@@ -33,18 +33,25 @@ class State():
         self.white_move = True
         self.movelog = []
     
-    def makeMove(self, move: Move):
+    def makeMove(self, move: Move) -> bool:
         self.board[move.startRow][move.startCol] == "--"
         self.board[move.endRow][move.endCol] == move.pieceMoved
         self.movelog.append(move)
         self.white_move = not self.white_move
+        return True
+
+    def get_all_allowed_moves(self, team: PieceColor) -> list[Move]:
+        """
+        list of all allowed moves for this board
+        """
+        pass
     
-    def get_all_possible_moves(self, team: PieceColor):
+    def get_all_possible_moves(self, team: PieceColor) -> list[Move]:
         """
         :param team: team to enumerate all moves
         :return: list of all allowed moves for team
         """
-        moves = []
+        moves: list[Move] = []
         for r in range(len(self.board)):
             for c in range(len(self.board[r])):
                 if (self.get_piece_color(r, c) == team):
