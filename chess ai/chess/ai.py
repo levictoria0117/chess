@@ -3,6 +3,7 @@ from typing import Callable
 from copy import deepcopy
 from chessEnums import PieceColor, PieceName
 from chessEngine import State, Move
+from heuristics import Heuristic
 
 # abstract base class
 class AI(ABC):
@@ -20,7 +21,7 @@ class AI(ABC):
         ...
 
 class MiniMaxAlphaBeta(AI):
-    def __init__(self, team: PieceColor, depth: int, heuristic_func: Callable[[State], float]):
+    def __init__(self, team: PieceColor, depth: int, heuristic_func: Heuristic):
         super().__init__(team)
         self.depth = depth
         self.heuristic_func = heuristic_func
@@ -66,7 +67,7 @@ class MiniMaxAlphaBeta(AI):
         :return: return tuple (float value of the State evaluation of board, best move string)
         """
         if depth == 0:
-            return self.heuristic_func(board), None
+            return self.heuristic_func.evaluate(board), None
         value = 9999
         best_move = None
         allowed_moves = board.get_all_allowed_moves(team)
@@ -102,7 +103,7 @@ class MiniMaxAlphaBeta(AI):
         """
         # base condition
         if depth == 0:
-            return self.heuristic_func(board), None
+            return self.heuristic_func.evaluate(board), None
         value = -9999
         best_move = None
         allowed_moves = board.get_all_allowed_moves(team)
