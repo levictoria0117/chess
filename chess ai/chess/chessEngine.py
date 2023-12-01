@@ -1,4 +1,6 @@
-from chessEnums import PieceColor
+from chessEnums import PieceColor, PieceName
+from utils import string_to_enum
+
 
 class Move:
     def __init__(self, startSq: tuple[int, int], endSq: tuple[int, int], board: list[list[str]]):
@@ -31,11 +33,25 @@ class State():
         self.movelog.append(move)
         self.white_move = not self.white_move
     
-    def get_all_allowed_moves(self, team: PieceColor):
+    def get_all_possible_moves(self, team: PieceColor):
         """
         :param team: team to enumerate all moves
         : return: list of all allowed moves for team
         """
-        pass
+        moves = []
+        for r in range(len(self.board)):
+            for c in range(len(self.board[r])):
+                if (self.get_piece_color(r, c) == team):
+                    piece = self.board[r][c][2:]
+                    self.get_move_function[piece](r, c, moves)
+        return moves
+        
+    def get_move_function(self, piece: str):
 
+    def get_piece_name(self, row: int, col: int):
+        return self.board[row][col]
     
+    def get_piece_color(self, row: int, col: int) -> PieceColor:
+        # In b_rook and w_pawn the first char is the color of the piece
+        return PieceColor.BLACK if self.board[row][col][0] == "b" else PieceColor.WHITE
+

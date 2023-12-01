@@ -1,4 +1,5 @@
 from abc import ABC, abstractclassmethod
+from typing import Callable
 from chessEnums import PieceColor
 from chessEngine import State
 
@@ -16,12 +17,17 @@ class AI(ABC):
         ...
 
 class MiniMaxAlphaBeta(AI):
-    def __init__(self, team: PieceColor, depth: int):
+    def __init__(self, team: PieceColor, depth: int, heuristic_func: Callable[..., float]):
         super().__init__(team)
         self.depth = depth
+        self.heuristic_func = heuristic_func
     
     def move(self, board: State):
-        pass
+        best_move = self.minimax(board)
+        if best_move is None:
+            name = board.get_piece_name(best_move)
+            board.makeMove(best_move)
+
 
     def minimax(self, board: State) -> str:
         """
@@ -41,7 +47,7 @@ class MiniMaxAlphaBeta(AI):
         """
         pass
 
-    def max_value(self, board: State, depth: int, team: PieceColor, alpha: int, beta: int) -> (float, str):
+    def max_value(self, board: State, depth: int, team: PieceColor, alpha: int, beta: int) -> tuple[float, str | None]:
         """
         :param board: State object representing representing a chess board State
         :param depth: minimax tree depth
