@@ -22,7 +22,7 @@ def main():
     screen = p.display.set_mode((WIDTH, HEIGHT))
     clock = p.time.Clock()
     screen.fill(p.Color("white"))
-    gameState = chessEngine.state()
+    gameState = chessEngine.State()
     loadingPieces()
     running = True
     while running:
@@ -35,7 +35,7 @@ def main():
         
 def drawChessGameState(screen):
     drawChessBoard(screen)
-    drawChessPieces(screen, chessEngine.state().board)
+    drawChessPieces(screen, chessEngine.State().board)
     
 def drawChessBoard(screen):
     colors = [p.Color("white"), p.Color("gray")]
