@@ -94,14 +94,111 @@ class State():
     
 
     def get_queen_moves(self, row:int, col: int)-> list[Move]:
-        pass
+        self.get_rook_moves(row, col)
+        self.get_bishop_moves(row, col)
+        return moves
+
+
     def get_king_moves(self, row:int, col: int)-> list[Move]:
-        pass
+        dir = ((1,0), (1,1), (0,1), (-1,1), (-1,0), (-1,-1), (0,-1), (1,-1))
+        if self.white_move:
+            teamColor = 'w'
+        else:
+            teamColor = 'b'
+        for i in range(8):
+            endRow = row + dir[i][0]
+            endcol = col + dir[i][1]
+            if 0 <= endRow < 8 and 0 <= endCol < 8:
+                endPiece = self.board[endRow][endCol]
+                if endPiece[0] != teamColor:
+                    moves.append(Move((row, col), (endRow, endCol), self.board))
+        return moves
+
     def get_pawn_moves(self, row:int, col: int)-> list[Move]:
-        pass
+        if self.white_move:
+            if self.board[row-1][c] == "--": # 1 square moves
+                moves.append(Move((row, col), (row-1, col), self.board))
+                if row == 6 and self.board[row-2][col] == "--": # two square moves
+                    moves.append(Move((row, col), (row-2, col), self.board))
+            if col-1 >= 0: #capture to left
+                if self.board[row-1][col-1][0] == 'b':
+                    moves.append(Move((row, col), (row-1, col-1), self.board))
+            if col+1 <= 7: #capture to right
+                if self.board[row-1][col+1][0] == 'b':
+                    moves.append(Move((row, col), (row-1, col+1), self.board))
+
+        else: #black pawn
+            if self.board[row+1][c] == "--": # 1 square moves
+                moves.append(Move((row, col), (row+1, col), self.board))
+                if row == 1 and self.board[row+2][col] == "--": # two square moves
+                    moves.append(Move((row, col), (row+2, col), self.board))
+            if col-1 >= 0: #capture to right
+                if self.board[row+1][col-1][0] == 'w':
+                    moves.append(Move((row, col), (row+1, col-1), self.board))
+            if col+1 <= 7: #capture to left
+                if self.board[row+1][col+1][0] == 'w':
+                    moves.append(Move((row, col), (row+1, col+1), self.board))
+        return moves
+
+
     def get_rook_moves(self, row:int, col: int)-> list[Move]:
-        pass
+        dir = ((-1,0), (0,-1), (1,0),(0,1))
+        if self.white_move:
+            oppColor = 'b'
+        else:
+            oppColor = 'w'
+        for d in dir:
+            for i in range(1,8):
+                endRow = row + d[0] * i
+                endCol = col + d[1] * i
+                if 0 <= endRow < 8 and 0 <= endCol < 8:
+                    endPiece == self.board[endRow][endCol]
+                    if endPiece == "--": #move if able to
+                        moves.append(Move((row, col), (endRow, endCol), self.board))
+                    elif endPiece[0] == oppColor: #capture enemy piece
+                        moves.append(Move((row, col), (endRow, endCol), self.board))
+                        break
+                    else: #same team, cannot do anything
+                        break
+                else: # escaped the board
+                    break # after every break, find new direction
+        return moves
+
     def get_knight_moves(self, row:int, col: int)-> list[Move]:
-        pass
+        kMoves = ((2,1), (2,-1), (1,2), (1,-2), (-2,1), (-2,-1), (-1,2), (-1,-2))
+        if self.white_move:
+            teamColor = 'w'
+        else:
+            teamColor = 'b'
+        for k in kMoves:
+            endRow = row + k[0]
+            endCol = col + k[1]
+            if 0 <= endRow < 8 and 0 <= endCol < 8:
+                endPiece == self.board[endRow][endCol]
+                if endPiece[0] != teamColor:
+                    moves.append(Move((row, col), (endRow, endCol), self.board))
+        return moves
+
+
     def get_bishop_moves(self, row:int, col: int)-> list[Move]:
-        pass
+        dir = ((-1, -1), (-1, 1), (1, -1), (1, 1))
+        if self.white_move:
+            oppColor = 'b'
+        else:
+            oppColor = 'w'
+        for d in dir:
+            for i in range(1, 8):
+                endRow = row + d[0] * i
+                endCol = col + d[1] * i
+                if 0 <= endRow < 8 and 0 <= endCol < 8:
+                    endPiece == self.board[endRow][endCol]
+                    if endPiece == "--":  # move if able to
+                        moves.append(Move((row, col), (endRow, endCol), self.board))
+                    elif endPiece[0] == oppColor:  # capture enemy piece
+                        moves.append(Move((row, col), (endRow, endCol), self.board))
+                        break
+                    else:  # same team, cannot do anything
+                        break
+                else:  # escaped the board
+                    break  # after every break, find new direction
+        return moves
