@@ -16,26 +16,79 @@ def loadingPieces():
     for piece in pieces:
         IMAGES[piece] = p.transform.scale(p.image.load('chessPieces/' + piece + '.png'), (SQUARE, SQUARE))
                                          
+def ask_user_name(screen):
+    font = p.font.Font(None, 32)
+    input_box = p.Rect(WIDTH / 2 - 100, HEIGHT / 2 - 20, 200, 40)
+    color_inactive = p.Color('lightskyblue3')
+    color_active = p.Color('dodgerblue2')
+    color = color_inactive
+    active = False
+    text = ''
+    done = False
+
+    while not done:
+        for event in p.event.get():
+            if event.type == p.QUIT:
+                done = True
+                return None
+            if event.type == p.MOUSEBUTTONDOWN:
+                if input_box.collidepoint(event.pos):
+                    active = not active
+                else:
+                    active = False
+                color = color_active if active else color_inactive
+            if event.type == p.KEYDOWN:
+                if active:
+                    if event.key == p.K_RETURN:
+                        done = True
+                    elif event.key == p.K_BACKSPACE:
+                        text = text[:-1]
+                    else:
+                        text += event.unicode
+
+        screen.fill((30, 30, 30))
+        txt_surface = font.render(text, True, color)
+        width = max(200, txt_surface.get_width()+10)
+        input_box.w = width
+        screen.blit(txt_surface, (input_box.x+5, input_box.y+5))
+        p.draw.rect(screen, color, input_box, 2)
+
+        p.display.flip()
+
+    return text
+
+
+def drawChessGameState(screen, gameState, user_name):
+    drawChessBoard(screen)
+    drawChessPieces(screen, gameState.board)
+    if user_name:
+        font = p.font.SysFont(None, 30)
+        text_surface = font.render(f"Player: {user_name}", True, p.Color('Black'))
+        screen.blit(text_surface, (5, 5))
+
 
 def main():
-    p.init()     
+    p.init()
     screen = p.display.set_mode((WIDTH, HEIGHT))
+    p.display.set_caption("Chess Game")
     clock = p.time.Clock()
     screen.fill(p.Color("white"))
     gameState = chessEngine.State()
     loadingPieces()
+    user_name = ask_user_name(screen)  # Get user name
+    if user_name is None:
+        return  # Exit if the user closed the window
     running = True
     while running:
         for e in p.event.get():
             if e.type == p.QUIT:
                 running = False
-        drawChessGameState(screen)
+        drawChessGameState(screen, gameState, user_name)  # Pass the user name here
         clock.tick(MAX_FPS)
         p.display.flip()
-        
-def drawChessGameState(screen):
-    drawChessBoard(screen)
-    drawChessPieces(screen, chessEngine.State().board)
+
+
+
     
 def drawChessBoard(screen):
     colors = [p.Color("white"), p.Color("gray")]
@@ -55,9 +108,3 @@ def drawChessPieces(screen, board):
 if __name__ == "__main__":
     main()
 
-    
-    
-            
-                  
-if __name__ == "__main__":
-    main()
