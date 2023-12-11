@@ -3,7 +3,13 @@ from chessEnums import PieceColor, PieceName
 from utils import string_to_enum
 
 
-class Move:
+class Move():
+    ranksToRows = {"1": 7, "2": 6, "3": 5, "4": 4,
+                   "5": 3, "6": 2, "7": 1, "8": 0}
+    rowsToRanks = {v: k for k, v in ranksToRows.items()}
+    filesToCols = {"a": 0, "b": 1, "c": 2, "d": 3,
+                   "e": 4, "f": 5, "g": 6, "h": 7}
+    colsToFiles = {v: k for k, v in filesToCols.items()}
     def __init__(self, startSq: tuple[int, int], endSq: tuple[int, int], board: list[list[str]]):
         """
         :param startSq: tuple holding the coordinates of piece start square (row, column)
@@ -14,8 +20,13 @@ class Move:
         self.startCol = startSq[1]
         self.endRow = endSq[0]
         self.endCol = endSq[1]
-        self.pieceMoved = board[self.startRow][self.startCol]
-        self.pieceCaptured = board[self.endRow][self.endCol]
+        self.pieceMoved = board[int(self.startRow)][int(self.startCol)]
+        self.pieceCaptured = board[int(self.endRow)][int(self.endCol)]
+    def getChessNotation(self):
+        #you can add to make this ilke real chess notation
+        return self.getRankFile(self.startRow,self.startCol)+self.getRankFile(self.endRow,self.endCol)
+    def getRankFile(self,r,c):
+        return self.colsToFiles[c]+self.rowsToRanks[r]
 
 """Stores information about current state of the board and determines valid moves at that state"""
 class State():
@@ -32,28 +43,64 @@ class State():
         ]
         self.white_move = True
         self.movelog = []
-    
+
+    """
+        Takes a Move as parameter ans executes it
+    """
     def makeMove(self, move: Move) -> bool:
-        self.board[move.startRow][move.startCol] == "--"
-        self.board[move.endRow][move.endCol] == move.pieceMoved
+        self.board[int(move.startRow)][int(move.startCol)] = "--"
+        self.board[int(move.endRow)][int(move.endCol)] = move.pieceMoved
         self.movelog.append(move)
         self.white_move = not self.white_move
         return True
+    """
+    Undo the last move made
+    """
+    def undoMove(self):
+        if len(self.movelog) !=0:#make sure that there is a move to undo
+            move = self.movelog.pop()
+            self.board[int(move.startRow)][int(move.startCol)] = move.pieceMoved
+            self.board[int(move.endRow)][int(move.endCol)] = move.pieceCaptured
+            self.white_move = not self.white_move #switch turns back
+
+    """
+    All moves considering checks
+    """
+    def getValidMoves(self):
+        return self.get_all_possible_moves()#for now we will not worry about checks
+
+
+
 
     def get_all_allowed_moves(self, team: PieceColor) -> list[Move]:
         """
         list of all allowed moves for this board
         """
         pass
-    
+
+    """
+        All moves without considering checks
+    """
+    def get_all_possible_moves(self):
+        moves = [Move((6,4),(4,4),self.board)]
+        for r in range(len(self.board)):
+            for c in range(len(self.board[r])):
+                turn = self.board[r][c][0]
+                if (turn == 'w' and self.white_move) and (turn == 'b' and not self.white_move):
+                    piece = self.board[r][c][1]
+                    if piece == '_pawn':
+                        self.get_pawn_moves(r,c,moves)
+                    elif piece == '_rook':
+                        self.get_rook_moves(r,c,)
+        return moves
     def get_all_possible_moves(self, team: PieceColor) -> list[Move]:
         """
         :param team: team to enumerate all moves
         :return: list of all allowed moves for team
         """
-        moves: list[Move] = []
-        for r in range(len(self.board)):
-            for c in range(len(self.board[r])):
+        moves: list[Move] = [Move((6,4),(4,4),self.board)]
+        for r in range(len(self.board)):#number of rows
+            for c in range(len(self.board[r])):#number of col
                 if (self.get_piece_color(r, c) == team):
                     piece = self.get_piece_name(r, c)
                     piece_moves = self.get_move_function(piece)(r, c)
@@ -91,13 +138,12 @@ class State():
     def get_piece_color(self, row: int, col: int) -> PieceColor:
         # In b_rook and w_pawn the first char is the color of the piece
         return PieceColor.BLACK if self.board[row][col][0] == "b" else PieceColor.WHITE
-    
 
-    def get_queen_moves(self, row:int, col: int)-> list[Move]:
-        self.get_rook_moves(row, col)
-        self.get_bishop_moves(row, col)
+    def get_queen_moves(self, row: int, col: int) -> list[Move]:
+        moves = []
+        moves += self.get_rook_moves(row, col)
+        moves += self.get_bishop_moves(row, col)
         return moves
-
 
     def get_king_moves(self, row:int, col: int)-> list[Move]:
         dir = ((1,0), (1,1), (0,1), (-1,1), (-1,0), (-1,-1), (0,-1), (1,-1))

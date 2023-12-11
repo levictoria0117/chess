@@ -74,15 +74,45 @@ def main():
     clock = p.time.Clock()
     screen.fill(p.Color("white"))
     gameState = chessEngine.State()
+    #validMove = gameState.getValidMoves()
+    moveMade = False #flag variable for a move is made
     loadingPieces()
     user_name = ask_user_name(screen)  # Get user name
     if user_name is None:
         return  # Exit if the user closed the window
     running = True
+    sqSelected = ()# no square is selected , keep track of the last click of the user(tuple:(row:col))
+    playerClick = [] #keep track of player clicks (two tuples:[(6,4),(4,4)])
     while running:
         for e in p.event.get():
             if e.type == p.QUIT:
                 running = False
+            #mouse handler
+            elif e.type == p.MOUSEBUTTONDOWN:
+                location = p.mouse.get_pos() #(x,y) location of mouse
+                col = location[0] // SQUARE
+                row = location[1] //SQUARE
+                if sqSelected == (row,col):#the user clicked the same square
+                    sqSelected = () #dselect
+                    playerClick = [] #clear player clicks
+                else:
+                    sqSelected = (row,col)
+                    playerClick.append(sqSelected)
+                if len(playerClick) == 2:#after 2nd click
+                    move = chessEngine.Move(playerClick[0],playerClick[1],gameState.board)
+                    print(move.getChessNotation())
+                    gameState.makeMove(move)
+                    sqSelected = () #reset user click
+                    playerClick = []
+            #key handlers
+            elif e.type == p.KEYDOWN:
+                if e.key == p.K_z:#undo when "z" is pressed
+                    gameState.undoMove()
+                    moveMade = True
+
+        if moveMade:
+            validMoves = gameState.getValidMoves()
+            moveMade = False
         drawChessGameState(screen, gameState, user_name)  # Pass the user name here
         clock.tick(MAX_FPS)
         p.display.flip()
