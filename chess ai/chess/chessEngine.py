@@ -67,7 +67,7 @@ class State():
     All moves considering checks
     """
     def getValidMoves(self):
-        return self.get_all_possible_moves()#for now we will not worry about checks
+        return self.get_all_possible_moves1()#for now we will not worry about checks
 
 
 
@@ -81,7 +81,7 @@ class State():
     """
         All moves without considering checks
     """
-    def get_all_possible_moves(self):
+    def get_all_possible_moves1(self):
         moves = [Move((6,4),(4,4),self.board)]
         for r in range(len(self.board)):
             for c in range(len(self.board[r])):
