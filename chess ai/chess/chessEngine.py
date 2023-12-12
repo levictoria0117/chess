@@ -53,8 +53,12 @@ class State():
         self.movelog = []
 
 
-    def onMove(self, move: Move, team: PieceColor):
+    def onMove(self, move: Move, team: PieceColor) -> bool:
         piece = self.get_piece_name(move.startRow, move.startCol)
+        if not self.get_piece_color(move.startRow, move.startCol) == team:
+            print(f"{self.get_piece_color == team =}")
+            return False
+        
         moves = self.get_move_function(piece)(move.startRow, move.startCol)
         for legalMoves in moves:
             if move.compareMoves(legalMoves):
@@ -98,7 +102,7 @@ class State():
         All moves without considering checks
     """
     def get_all_possible_moves1(self):
-        moves = [Move((6,4),(4,4),self.board)]
+        moves: list[Move] = []
         for r in range(len(self.board)):
             for c in range(len(self.board[r])):
                 turn = self.board[r][c][0]
@@ -114,10 +118,10 @@ class State():
         :param team: team to enumerate all moves
         :return: list of all allowed moves for team
         """
-        moves: list[Move] = [Move((6,4),(4,4),self.board)]
+        moves: list[Move] = []
         for r in range(len(self.board)):#number of rows
             for c in range(len(self.board[r])):#number of col
-                if (self.get_piece_color(r, c) == team):
+                if ((self.board[r][c] != "--") and (self.get_piece_color(r, c) == team)):
                     piece = self.get_piece_name(r, c)
                     piece_moves = self.get_move_function(piece)(r, c)
                     moves.extend(piece_moves)
@@ -138,7 +142,7 @@ class State():
             case PieceName.BISHOP:
                 return self.get_bishop_moves
 
-    def get_piece_name(self, row: int, col: int, start_of_piece_name = 2) -> PieceName:
+    def get_piece_name(self, row: int, col: int, start_of_piece_name = 2) -> PieceName | None:
         """
         b_rook
           ^
@@ -149,11 +153,15 @@ class State():
         :param start_of_piece_name: start of the piece name based on the string names in board
         :return: the name of the piece at (row, col)
         """
-        return string_to_enum(self.board[row][col][start_of_piece_name:], PieceName)
+        if (self.board[row][col] == "--"):
+            return None
+        return string_to_enum(self.board[int(row)][int(col)][start_of_piece_name:], PieceName)
     
-    def get_piece_color(self, row: int, col: int) -> PieceColor:
+    def get_piece_color(self, row: int, col: int) -> PieceColor | None:
         # In b_rook and w_pawn the first char is the color of the piece
-        return PieceColor.BLACK if self.board[row][col][0] == "b" else PieceColor.WHITE
+        if (self.board[row][col] == "--"):
+            return None
+        return PieceColor.BLACK if self.board[int(row)][int(col)][0] == "b" else PieceColor.WHITE
 
     def get_queen_moves(self, row: int, col: int) -> list[Move]:
         moves = []

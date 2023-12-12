@@ -35,8 +35,8 @@ class MiniMaxAlphaBeta(AI):
         """
         best_move = self.minimax(board)
         if best_move is not None:
-            name: PieceName = board.get_piece_name(best_move)
-            board.makeMove(best_move)
+            name: PieceName = board.get_piece_name(best_move.startRow, best_move.startCol)
+            board.onMove(best_move, self.team)
             print(f"\nAI: moving {name} {(best_move.startRow, best_move.startCol)} -> {(best_move.endRow, best_move.endCol)}")
             return True
         return False
@@ -50,9 +50,9 @@ class MiniMaxAlphaBeta(AI):
         alpha = -100000
         beta = 100000
         if self.team == PieceColor.BLACK:
-            _, best_move = self.min_value(board, self.depth, PieceColor.BLACK, alpha, beta)
+            _, best_move = self.min_value(board, self.depth, PieceColor.WHITE, alpha, beta)
         elif self.team == PieceColor.WHITE:
-            _, best_move = self.max_value(board, self.depth, PieceColor.BLACK, alpha, beta)
+            _, best_move = self.max_value(board, self.depth, PieceColor.WHITE, alpha, beta)
         else:
             raise Exception("Error AI: team not defined")
         return best_move
@@ -78,7 +78,7 @@ class MiniMaxAlphaBeta(AI):
             temp_state = State()
             temp_state.board = temp_board
 
-            if temp_state.makeMove(move):
+            if temp_state.onMove(move, team):
                 opposite_team = PieceColor.BLACK if team == PieceColor.WHITE else PieceColor.WHITE
                 val, _ = self.max_value(temp_state, depth - 1, opposite_team, alpha, beta)
 
@@ -115,7 +115,7 @@ class MiniMaxAlphaBeta(AI):
             temp_state = State()
             temp_state.board = temp_board
 
-            if temp_state.makeMove(move):
+            if temp_state.onMove(move, team):
                 opposite_team = PieceColor.BLACK if team == PieceColor.WHITE else PieceColor.WHITE
                 val, _ = self.min_value(temp_state, depth - 1, opposite_team, alpha, beta)
 

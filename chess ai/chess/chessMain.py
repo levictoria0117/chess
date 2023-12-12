@@ -4,20 +4,20 @@ import pygame as p
 import chessEngine
 from chessEnums import PieceColor
 from ai import MiniMaxAlphaBeta, AI
-from heuristics import Heuristic, ScoreMaterial
+from heuristics import Heuristic, ScoreMaterial, TestHeuristic, RandomHeuristic
 
 WIDTH = 600
 HEIGHT = 600
 DIMENSIONS = 8
 SQUARE = HEIGHT/DIMENSIONS
-MAX_FPS = 15
+MAX_FPS = 20
 IMAGES = {}
 
 def loadingPieces():
     pieces = ["b_pawn", "b_rook", "b_knight", "b_bishop", "b_queen", "b_king", 
               "w_pawn", "w_rook", "w_knight", "w_bishop", "w_queen", "w_king"]
     for piece in pieces:
-        IMAGES[piece] = p.transform.scale(p.image.load('./chessPieces/' + piece + '.png'), (SQUARE, SQUARE))
+        IMAGES[piece] = p.transform.scale(p.image.load('./chess ai/chess/chessPieces/' + piece + '.png'), (SQUARE, SQUARE))
                                          
 def ask_user_name(screen):
     font = p.font.Font(None, 32)
@@ -61,8 +61,9 @@ def ask_user_name(screen):
     return text
 
 
-def drawChessGameState(screen, gameState, user_name):
+def drawChessGameState(screen, gameState, user_name, validMoves, sqSelected):
     drawChessBoard(screen)
+    highlightSquares(screen, gameState, validMoves, sqSelected)
     drawChessPieces(screen, gameState.board)
     if user_name:
         font = p.font.SysFont(None, 30)
@@ -77,14 +78,17 @@ def main():
     clock = p.time.Clock()
     screen.fill(p.Color("white"))
     gameState = chessEngine.State()
-    #validMove = gameState.getValidMoves()
+    validMoves = gameState.getValidMoves()
     moveMade = False #flag variable for a move is made
     loadingPieces()
     user_name = ask_user_name(screen)  # Get user name
     user_color = PieceColor.BLACK
     ai_color = PieceColor.WHITE if user_color == PieceColor.BLACK else PieceColor.BLACK
-    heuristic: Heuristic = ScoreMaterial()
-    ai: AI = MiniMaxAlphaBeta(ai_color, depth=2, heuristic_func=heuristic)
+    gameState.white_move = user_color == PieceColor.WHITE
+    # heuristic: Heuristic = ScoreMaterial()
+    # heuristic: Heuristic = TestHeuristic()
+    heuristic: Heuristic = RandomHeuristic()
+    ai: AI = MiniMaxAlphaBeta(ai_color, depth = 5, heuristic_func=heuristic)
 
     if user_name is None:
         return  # Exit if the user closed the window
@@ -114,6 +118,8 @@ def main():
                     move = chessEngine.Move(playerClick[0],playerClick[1],gameState.board)
                     print(move.getChessNotation())
                     has_user_moved = gameState.onMove(move, user_color)
+                    drawChessGameState(screen, gameState, user_name, validMoves, sqSelected)  # Pass the user name here
+                    p.display.flip()
                     sqSelected = () #reset user click
                     playerClick = []
 
@@ -124,19 +130,16 @@ def main():
                     moveMade = True
 
         # ai turn
-        # if has_user_moved:
-        #     ai.move(gameState)
+        if has_user_moved:
+            ai.move(gameState)
 
         if moveMade:
             validMoves = gameState.getValidMoves()
             moveMade = False
-        drawChessGameState(screen, gameState, user_name)  # Pass the user name here
+        drawChessGameState(screen, gameState, user_name, validMoves, sqSelected)  # Pass the user name here
         clock.tick(MAX_FPS)
         p.display.flip()
 
-
-
-    
 def drawChessBoard(screen):
     colors = [p.Color("white"), p.Color("gray")]
     for r in range(DIMENSIONS):
@@ -150,6 +153,31 @@ def drawChessPieces(screen, board):
             piece = board[r][c]
             if piece != "--":
                 screen.blit(IMAGES[piece], p.Rect(c*SQUARE, r*SQUARE, SQUARE, SQUARE)) 
+
+def highlightSquares(screen, game_state, valid_moves, square_selected):
+    """
+    Highlight square selected and moves for piece selected.
+    """
+    if (len(game_state.movelog)) > 0:
+        last_move = game_state.movelog[-1]
+        s = p.Surface((SQUARE, SQUARE))
+        s.set_alpha(100)
+        s.fill(p.Color('green'))
+        screen.blit(s, (last_move.endCol * SQUARE, last_move.endRow * SQUARE))
+    if square_selected != ():
+        row, col = square_selected
+        if game_state.board[int(row)][int(col)][0] == (
+                'w' if game_state.white_move else 'b'):  # square_selected is a piece that can be moved
+            # highlight selected square
+            s = p.Surface((SQUARE, SQUARE))
+            s.set_alpha(100)  # transparency value 0 -> transparent, 255 -> opaque
+            s.fill(p.Color('blue'))
+            screen.blit(s, (col * SQUARE, row * SQUARE))
+            # highlight moves from that square
+            s.fill(p.Color('yellow'))
+            for move in valid_moves:
+                if move.startRow == row and move.startCol == col:
+                    screen.blit(s, (move.endCol * SQUARE, move.endRow * SQUARE))
 
                   
 if __name__ == "__main__":
