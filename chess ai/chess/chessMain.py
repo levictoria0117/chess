@@ -81,14 +81,15 @@ def main():
     validMoves = gameState.getValidMoves()
     moveMade = False #flag variable for a move is made
     loadingPieces()
-    user_name = ask_user_name(screen)  # Get user name
-    user_color = PieceColor.BLACK
+    # user_name = ask_user_name(screen)  # Get user name
+    user_name = "Vic :)"
+    user_color = PieceColor.WHITE
     ai_color = PieceColor.WHITE if user_color == PieceColor.BLACK else PieceColor.BLACK
     gameState.white_move = user_color == PieceColor.WHITE
     # heuristic: Heuristic = ScoreMaterial()
     # heuristic: Heuristic = TestHeuristic()
     heuristic: Heuristic = RandomHeuristic()
-    ai: AI = MiniMaxAlphaBeta(ai_color, depth = 5, heuristic_func=heuristic)
+    ai: AI = MiniMaxAlphaBeta(ai_color, depth = 1, heuristic_func=heuristic)
 
     if user_name is None:
         return  # Exit if the user closed the window
