@@ -106,14 +106,14 @@ def main():
                     sqSelected = () #dselect
                     playerClick = [] #clear player clicks
                 else:
-                    if (gameState.get_piece_color(int(row), int(col)) == user_color):
-                        print(int(row), int(col))
-                        sqSelected = (row,col)
-                        playerClick.append(sqSelected)
+                    # if (gameState.get_piece_color(int(row), int(col)) == user_color):
+                    print(int(row), int(col))
+                    sqSelected = (int(row),int(col))
+                    playerClick.append(sqSelected)
                 if len(playerClick) == 2:#after 2nd click
                     move = chessEngine.Move(playerClick[0],playerClick[1],gameState.board)
                     print(move.getChessNotation())
-                    has_user_moved = gameState.makeMove(move)
+                    has_user_moved = gameState.onMove(move, user_color)
                     sqSelected = () #reset user click
                     playerClick = []
 
@@ -124,8 +124,8 @@ def main():
                     moveMade = True
 
         # ai turn
-        if has_user_moved:
-            ai.move(gameState)
+        # if has_user_moved:
+        #     ai.move(gameState)
 
         if moveMade:
             validMoves = gameState.getValidMoves()

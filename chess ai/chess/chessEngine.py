@@ -27,6 +27,14 @@ class Move():
         return self.getRankFile(self.startRow,self.startCol)+self.getRankFile(self.endRow,self.endCol)
     def getRankFile(self,r,c):
         return self.colsToFiles[c]+self.rowsToRanks[r]
+    
+    def compareMoves(self, move) -> bool:
+        return (
+            move.startRow == self.startRow and
+            move.startCol == self.startCol and
+            move.endRow == self.endRow and
+            move.endCol == self.endCol
+        )
 
 """Stores information about current state of the board and determines valid moves at that state"""
 class State():
@@ -41,8 +49,16 @@ class State():
             ["w_pawn", "w_pawn", "w_pawn", "w_pawn", "w_pawn", "w_pawn", "w_pawn", "w_pawn"],
             ["w_rook", "w_knight", "w_bishop", "w_queen", "w_king", "w_bishop", "w_knight", "w_rook"],
         ]
-        self.white_move = True
+        self.white_move = False
         self.movelog = []
+
+
+    def onMove(self, move: Move, team: PieceColor):
+        piece = self.get_piece_name(move.startRow, move.startCol)
+        moves = self.get_move_function(piece)(move.startRow, move.startCol)
+        for legalMoves in moves:
+            if move.compareMoves(legalMoves):
+                return self.makeMove(move)
 
     """
         Takes a Move as parameter ans executes it
@@ -146,6 +162,7 @@ class State():
         return moves
 
     def get_king_moves(self, row:int, col: int)-> list[Move]:
+        moves: list[Move] = []
         dir = ((1,0), (1,1), (0,1), (-1,1), (-1,0), (-1,-1), (0,-1), (1,-1))
         if self.white_move:
             teamColor = 'w'
@@ -153,7 +170,7 @@ class State():
             teamColor = 'b'
         for i in range(8):
             endRow = row + dir[i][0]
-            endcol = col + dir[i][1]
+            endCol = col + dir[i][1]
             if 0 <= endRow < 8 and 0 <= endCol < 8:
                 endPiece = self.board[endRow][endCol]
                 if endPiece[0] != teamColor:
@@ -161,8 +178,9 @@ class State():
         return moves
 
     def get_pawn_moves(self, row:int, col: int)-> list[Move]:
+        moves: list[Move] = []
         if self.white_move:
-            if self.board[row-1][c] == "--": # 1 square moves
+            if self.board[row-1][col] == "--": # 1 square moves
                 moves.append(Move((row, col), (row-1, col), self.board))
                 if row == 6 and self.board[row-2][col] == "--": # two square moves
                     moves.append(Move((row, col), (row-2, col), self.board))
@@ -174,7 +192,7 @@ class State():
                     moves.append(Move((row, col), (row-1, col+1), self.board))
 
         else: #black pawn
-            if self.board[row+1][c] == "--": # 1 square moves
+            if self.board[row+1][col] == "--": # 1 square moves
                 moves.append(Move((row, col), (row+1, col), self.board))
                 if row == 1 and self.board[row+2][col] == "--": # two square moves
                     moves.append(Move((row, col), (row+2, col), self.board))
@@ -188,6 +206,7 @@ class State():
 
 
     def get_rook_moves(self, row:int, col: int)-> list[Move]:
+        moves: list[Move] = []
         dir = ((-1,0), (0,-1), (1,0),(0,1))
         if self.white_move:
             oppColor = 'b'
@@ -198,7 +217,7 @@ class State():
                 endRow = row + d[0] * i
                 endCol = col + d[1] * i
                 if 0 <= endRow < 8 and 0 <= endCol < 8:
-                    endPiece == self.board[endRow][endCol]
+                    endPiece = self.board[endRow][endCol]
                     if endPiece == "--": #move if able to
                         moves.append(Move((row, col), (endRow, endCol), self.board))
                     elif endPiece[0] == oppColor: #capture enemy piece
@@ -211,6 +230,7 @@ class State():
         return moves
 
     def get_knight_moves(self, row:int, col: int)-> list[Move]:
+        moves: list[Move] = []
         kMoves = ((2,1), (2,-1), (1,2), (1,-2), (-2,1), (-2,-1), (-1,2), (-1,-2))
         if self.white_move:
             teamColor = 'w'
@@ -220,13 +240,14 @@ class State():
             endRow = row + k[0]
             endCol = col + k[1]
             if 0 <= endRow < 8 and 0 <= endCol < 8:
-                endPiece == self.board[endRow][endCol]
+                endPiece = self.board[endRow][endCol]
                 if endPiece[0] != teamColor:
                     moves.append(Move((row, col), (endRow, endCol), self.board))
         return moves
 
 
     def get_bishop_moves(self, row:int, col: int)-> list[Move]:
+        moves: list[Move] = []
         dir = ((-1, -1), (-1, 1), (1, -1), (1, 1))
         if self.white_move:
             oppColor = 'b'
@@ -237,7 +258,7 @@ class State():
                 endRow = row + d[0] * i
                 endCol = col + d[1] * i
                 if 0 <= endRow < 8 and 0 <= endCol < 8:
-                    endPiece == self.board[endRow][endCol]
+                    endPiece = self.board[endRow][endCol]
                     if endPiece == "--":  # move if able to
                         moves.append(Move((row, col), (endRow, endCol), self.board))
                     elif endPiece[0] == oppColor:  # capture enemy piece
