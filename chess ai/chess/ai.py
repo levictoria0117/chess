@@ -70,7 +70,8 @@ class MiniMaxAlphaBeta(AI):
             return self.heuristic_func.evaluate(board), None
         value = 9999
         best_move = None
-        allowed_moves = board.get_all_allowed_moves(team)
+        # allowed_moves = board.get_all_allowed_moves(team)
+        allowed_moves = board.get_all_possible_moves(team)
 
         for move in allowed_moves:
             temp_board = deepcopy(board.board)
@@ -106,7 +107,8 @@ class MiniMaxAlphaBeta(AI):
             return self.heuristic_func.evaluate(board), None
         value = -9999
         best_move = None
-        allowed_moves = board.get_all_allowed_moves(team)
+        # allowed_moves = board.get_all_allowed_moves(team)
+        allowed_moves = board.get_all_possible_moves(team)
 
         for move in allowed_moves:
             temp_board = deepcopy(board.board)

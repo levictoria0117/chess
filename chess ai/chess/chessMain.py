@@ -2,6 +2,9 @@
 
 import pygame as p
 import chessEngine
+from chessEnums import PieceColor
+from ai import MiniMaxAlphaBeta, AI
+from heuristics import Heuristic, ScoreMaterial
 
 WIDTH = 600
 HEIGHT = 600
@@ -14,7 +17,7 @@ def loadingPieces():
     pieces = ["b_pawn", "b_rook", "b_knight", "b_bishop", "b_queen", "b_king", 
               "w_pawn", "w_rook", "w_knight", "w_bishop", "w_queen", "w_king"]
     for piece in pieces:
-        IMAGES[piece] = p.transform.scale(p.image.load('chessPieces/' + piece + '.png'), (SQUARE, SQUARE))
+        IMAGES[piece] = p.transform.scale(p.image.load('./chessPieces/' + piece + '.png'), (SQUARE, SQUARE))
                                          
 def ask_user_name(screen):
     font = p.font.Font(None, 32)
@@ -78,16 +81,23 @@ def main():
     moveMade = False #flag variable for a move is made
     loadingPieces()
     user_name = ask_user_name(screen)  # Get user name
+    user_color = PieceColor.BLACK
+    ai_color = PieceColor.WHITE if user_color == PieceColor.BLACK else PieceColor.BLACK
+    heuristic: Heuristic = ScoreMaterial()
+    ai: AI = MiniMaxAlphaBeta(ai_color, depth=2, heuristic_func=heuristic)
+
     if user_name is None:
         return  # Exit if the user closed the window
     running = True
     sqSelected = ()# no square is selected , keep track of the last click of the user(tuple:(row:col))
     playerClick = [] #keep track of player clicks (two tuples:[(6,4),(4,4)])
     while running:
+        has_user_moved = False
         for e in p.event.get():
             if e.type == p.QUIT:
                 running = False
             #mouse handler
+            # user turn
             elif e.type == p.MOUSEBUTTONDOWN:
                 location = p.mouse.get_pos() #(x,y) location of mouse
                 col = location[0] // SQUARE
@@ -96,19 +106,26 @@ def main():
                     sqSelected = () #dselect
                     playerClick = [] #clear player clicks
                 else:
-                    sqSelected = (row,col)
-                    playerClick.append(sqSelected)
+                    if (gameState.get_piece_color(int(row), int(col)) == user_color):
+                        print(int(row), int(col))
+                        sqSelected = (row,col)
+                        playerClick.append(sqSelected)
                 if len(playerClick) == 2:#after 2nd click
                     move = chessEngine.Move(playerClick[0],playerClick[1],gameState.board)
                     print(move.getChessNotation())
-                    gameState.makeMove(move)
+                    has_user_moved = gameState.makeMove(move)
                     sqSelected = () #reset user click
                     playerClick = []
+
             #key handlers
             elif e.type == p.KEYDOWN:
                 if e.key == p.K_z:#undo when "z" is pressed
                     gameState.undoMove()
                     moveMade = True
+
+        # ai turn
+        if has_user_moved:
+            ai.move(gameState)
 
         if moveMade:
             validMoves = gameState.getValidMoves()
