@@ -2,9 +2,10 @@
 
 import pygame as p
 import chessEngine
-from chessEnums import PieceColor
+from chessEnums import PieceColor, PieceName
 from ai import MiniMaxAlphaBeta, AI
-from heuristics import Heuristic, ScoreMaterial, TestHeuristic, RandomHeuristic
+from heuristics import Heuristic, ScoreMaterial, MaterialPositionHeuristic, RandomHeuristic
+import timeit
 
 WIDTH = 600
 HEIGHT = 600
@@ -77,19 +78,21 @@ def main():
     p.display.set_caption("Chess Game")
     clock = p.time.Clock()
     screen.fill(p.Color("white"))
-    gameState = chessEngine.State()
-    validMoves = gameState.getValidMoves()
     moveMade = False #flag variable for a move is made
     loadingPieces()
-    # user_name = ask_user_name(screen)  # Get user name
-    user_name = "Vic :)"
-    user_color = PieceColor.WHITE
+    user_name = ask_user_name(screen)  # Get user name
+    ai_times = []
+    user_color = PieceColor.BLACK
     ai_color = PieceColor.WHITE if user_color == PieceColor.BLACK else PieceColor.BLACK
-    gameState.white_move = user_color == PieceColor.WHITE
+    gameState = chessEngine.State(user_color == PieceColor.WHITE)
+    validMoves = gameState.getValidMoves()
+    AI_DEPTH_MINIMAX = 3
+
+    # gameState.white_move = user_color == PieceColor.WHITE
     # heuristic: Heuristic = ScoreMaterial()
-    # heuristic: Heuristic = TestHeuristic()
-    heuristic: Heuristic = RandomHeuristic()
-    ai: AI = MiniMaxAlphaBeta(ai_color, depth = 1, heuristic_func=heuristic)
+    heuristic: Heuristic = MaterialPositionHeuristic()
+    # heuristic: Heuristic = RandomHeuristic()
+    ai: AI = MiniMaxAlphaBeta(ai_color, depth = AI_DEPTH_MINIMAX, heuristic_func=heuristic)
 
     if user_name is None:
         return  # Exit if the user closed the window
@@ -132,14 +135,37 @@ def main():
 
         # ai turn
         if has_user_moved:
-            ai.move(gameState)
+            execution_time = timeit.timeit(lambda: timeAI(ai, gameState), number=1)
+            ai_times.append(execution_time)
+            print(f"AI time: {execution_time}")
 
         if moveMade:
             validMoves = gameState.getValidMoves()
             moveMade = False
         drawChessGameState(screen, gameState, user_name, validMoves, sqSelected)  # Pass the user name here
+
+        kings = 0
+        for row in range(len(gameState.board)):
+            for col in range(len(gameState.board)):
+                if gameState.get_piece_name(row, col) == PieceName.KING:
+                    kings += 1
+        if kings < 2:
+            draw_text(screen, 'game exploded sorry :(')
+            break
         clock.tick(MAX_FPS)
         p.display.flip()
+
+    total_time = 0
+    for time in ai_times:
+        total_time += time
+
+    print("\n##### RESULTS #####")
+    print(f"\ntotal Ai moves: {len(ai_times)}")
+    print(f"all AI Execution timings: {ai_times}")
+    print(f"average AI Execution time: {total_time / len(ai_times)}")
+    print(f"minimax alpha beta depth: {AI_DEPTH_MINIMAX}")
+    print(f"minimax heuristic used: {heuristic.__class__.__name__}\n")
+
 
 def drawChessBoard(screen):
     colors = [p.Color("white"), p.Color("gray")]
@@ -180,6 +206,17 @@ def highlightSquares(screen, game_state, valid_moves, square_selected):
                 if move.startRow == row and move.startCol == col:
                     screen.blit(s, (move.endCol * SQUARE, move.endRow * SQUARE))
 
+def timeAI(ai, gameState):
+    ai.move(gameState)
+
+
+def draw_text(screen, text):
+    font = p.font.SysFont("Comic Sans", 32, True, False)
+    text_object = font.render(text, False, p.Color('Gray'))
+    text_loc = p.Rect(0, 0, WIDTH, HEIGHT)
+    screen.blit(text_object, text_loc)
+    text_object = font.render(text, False, p.Color('Red'))
+    screen.blit(text_object, text_loc.move(2, 2))
                   
 if __name__ == "__main__":
     main()

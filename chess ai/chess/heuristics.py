@@ -67,7 +67,7 @@ class Heuristic(ABC):
 
 class ScoreMaterial(Heuristic):
     def __init__(self, piece_score: dict[str, float] = {
-        PieceName.KING.value: 0.0,
+        PieceName.KING.value: 100.0,
         PieceName.QUEEN.value: 10.0,
         PieceName.ROOK.value: 5.0,
         PieceName.BISHOP.value: 3.0,
@@ -99,9 +99,9 @@ class ScoreMaterial(Heuristic):
                         score += self.piece_score[board.get_piece_name(row, col).value]
         return score
     
-class TestHeuristic(Heuristic):
+class MaterialPositionHeuristic(Heuristic):
     def __init__(self, piece_score: dict[str, float] = {
-        PieceName.KING.value: 0.0,
+        PieceName.KING.value: 100.0,
         PieceName.QUEEN.value: 10.0,
         PieceName.ROOK.value: 5.0,
         PieceName.BISHOP.value: 3.0,
@@ -126,10 +126,10 @@ class TestHeuristic(Heuristic):
                 if piece != PieceName.KING:
                     piece_position_key = (piece_color, piece)
                     piece_position_score = piece_position_scores[piece_position_key][row][col]
-                if piece == PieceColor.WHITE:
-                    score += self.piece_score[piece] + piece_position_score
-                if piece == PieceColor.BLACK:
-                    score -= self.piece_score[piece] + piece_position_score
+                if piece_color == PieceColor.WHITE:
+                    score += self.piece_score[piece.value] + piece_position_score
+                if piece_color == PieceColor.BLACK:
+                    score -= self.piece_score[piece.value] + piece_position_score
 
         return score
 # def findRandomMove(valid_moves):

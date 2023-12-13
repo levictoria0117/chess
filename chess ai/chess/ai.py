@@ -75,7 +75,7 @@ class MiniMaxAlphaBeta(AI):
 
         for move in allowed_moves:
             temp_board = deepcopy(board.board)
-            temp_state = State()
+            temp_state = State(team == PieceColor.WHITE)
             temp_state.board = temp_board
 
             if temp_state.onMove(move, team):
@@ -86,10 +86,10 @@ class MiniMaxAlphaBeta(AI):
                     value = val
                     best_move = move
                 
-                # beta = min(value, beta)
+                beta = min(value, beta)
                 
-                # if beta <= alpha:
-                #     return value, best_move
+                if beta <= alpha:
+                    return value, best_move
         return value, best_move
 
 
@@ -112,7 +112,7 @@ class MiniMaxAlphaBeta(AI):
 
         for move in allowed_moves:
             temp_board = deepcopy(board.board)
-            temp_state = State()
+            temp_state = State(team == PieceColor.WHITE)
             temp_state.board = temp_board
 
             if temp_state.onMove(move, team):
@@ -123,11 +123,11 @@ class MiniMaxAlphaBeta(AI):
                     value = val
                     best_move = move
                 
-                # # alpha update
-                # alpha = min(value, alpha)
+                # alpha update
+                alpha = min(value, alpha)
                 
-                # # prune
-                # if beta <= alpha:
-                #     return value, best_move
+                # prune
+                if beta <= alpha:
+                    return value, best_move
         return value, best_move
 

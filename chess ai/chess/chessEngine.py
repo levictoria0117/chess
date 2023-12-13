@@ -38,7 +38,7 @@ class Move():
 
 """Stores information about current state of the board and determines valid moves at that state"""
 class State():
-    def __init__(self):
+    def __init__(self, white_move: bool):
         self.board = [
             ["b_rook", "b_knight", "b_bishop", "b_queen", "b_king", "b_bishop", "b_knight", "b_rook"],
             ["b_pawn", "b_pawn", "b_pawn", "b_pawn", "b_pawn", "b_pawn", "b_pawn", "b_pawn"],
@@ -49,7 +49,7 @@ class State():
             ["w_pawn", "w_pawn", "w_pawn", "w_pawn", "w_pawn", "w_pawn", "w_pawn", "w_pawn"],
             ["w_rook", "w_knight", "w_bishop", "w_queen", "w_king", "w_bishop", "w_knight", "w_rook"],
         ]
-        self.white_move = False
+        self.white_move = white_move
         self.movelog = []
 
 
@@ -60,6 +60,7 @@ class State():
             return False
         
         moves = self.get_move_function(piece)(move.startRow, move.startCol)
+        # slow...
         for legalMoves in moves:
             if move.compareMoves(legalMoves):
                 return self.makeMove(move)
@@ -188,28 +189,30 @@ class State():
     def get_pawn_moves(self, row:int, col: int)-> list[Move]:
         moves: list[Move] = []
         if self.white_move:
-            if self.board[row-1][col] == "--": # 1 square moves
-                moves.append(Move((row, col), (row-1, col), self.board))
-                if row == 6 and self.board[row-2][col] == "--": # two square moves
-                    moves.append(Move((row, col), (row-2, col), self.board))
+            endRow = row - 1
+            if self.board[endRow][col] == "--": # 1 square moves
+                moves.append(Move((row, col), (endRow, col), self.board))
+                if row == 6 and self.board[endRow - 1][col] == "--": # two square moves
+                    moves.append(Move((row, col), (endRow - 1, col), self.board))
             if col-1 >= 0: #capture to left
-                if self.board[row-1][col-1][0] == 'b':
-                    moves.append(Move((row, col), (row-1, col-1), self.board))
+                if self.board[endRow][col-1][0] == 'b':
+                    moves.append(Move((row, col), (endRow, col-1), self.board))
             if col+1 <= 7: #capture to right
-                if self.board[row-1][col+1][0] == 'b':
-                    moves.append(Move((row, col), (row-1, col+1), self.board))
+                if self.board[endRow][col+1][0] == 'b':
+                    moves.append(Move((row, col), (endRow, col+1), self.board))
 
         else: #black pawn
-            if self.board[row+1][col] == "--": # 1 square moves
-                moves.append(Move((row, col), (row+1, col), self.board))
-                if row == 1 and self.board[row+2][col] == "--": # two square moves
-                    moves.append(Move((row, col), (row+2, col), self.board))
+            endRow = row+1
+            if self.board[endRow][col] == "--": # 1 square moves
+                moves.append(Move((row, col), (endRow, col), self.board))
+                if row == 1 and self.board[endRow+1][col] == "--": # two square moves
+                    moves.append(Move((row, col), (endRow + 1, col), self.board))
             if col-1 >= 0: #capture to right
-                if self.board[row+1][col-1][0] == 'w':
-                    moves.append(Move((row, col), (row+1, col-1), self.board))
+                if self.board[endRow][col-1][0] == 'w':
+                    moves.append(Move((row, col), (endRow, col-1), self.board))
             if col+1 <= 7: #capture to left
-                if self.board[row+1][col+1][0] == 'w':
-                    moves.append(Move((row, col), (row+1, col+1), self.board))
+                if self.board[endRow][col+1][0] == 'w':
+                    moves.append(Move((row, col), (endRow, col+1), self.board))
         return moves
 
 
