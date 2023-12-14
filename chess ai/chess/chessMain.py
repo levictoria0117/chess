@@ -1,4 +1,5 @@
 """User input and displaying current state of all pieces"""
+import os
 
 import pygame as p
 import chessEngine
@@ -18,7 +19,7 @@ def loadingPieces():
     pieces = ["b_pawn", "b_rook", "b_knight", "b_bishop", "b_queen", "b_king", 
               "w_pawn", "w_rook", "w_knight", "w_bishop", "w_queen", "w_king"]
     for piece in pieces:
-        IMAGES[piece] = p.transform.scale(p.image.load('./chess ai/chess/chessPieces/' + piece + '.png'), (SQUARE, SQUARE))
+        IMAGES[piece] = p.transform.scale(p.image.load(os.getcwd()+'/chessPieces/' + piece + '.png'), (SQUARE, SQUARE))
                                          
 def ask_user_name(screen):
     font = p.font.Font(None, 32)
