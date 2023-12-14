@@ -151,8 +151,9 @@ def main():
                 if gameState.get_piece_name(row, col) == PieceName.KING:
                     kings += 1
         if kings < 2:
-            draw_text(screen, 'game exploded sorry :(')
-            break
+            drawChessGameState(screen, gameState, user_name, validMoves, sqSelected)
+            draw_text(screen, 'GAME OVER')
+            #break
         clock.tick(MAX_FPS)
         p.display.flip()
 
@@ -212,12 +213,11 @@ def timeAI(ai, gameState):
 
 
 def draw_text(screen, text):
-    font = p.font.SysFont("Comic Sans", 32, True, False)
-    text_object = font.render(text, False, p.Color('Gray'))
-    text_loc = p.Rect(0, 0, WIDTH, HEIGHT)
-    screen.blit(text_object, text_loc)
-    text_object = font.render(text, False, p.Color('Red'))
-    screen.blit(text_object, text_loc.move(2, 2))
+    font = p.font.SysFont("Helvetica", 30, 'bold')
+    text_object = font.render(text, True, p.Color('Black'))
+    text_rect = text_object.get_rect()
+    text_rect.center = (WIDTH // 2, HEIGHT // 2)
+    screen.blit(text_object, text_rect)
                   
 if __name__ == "__main__":
     main()
